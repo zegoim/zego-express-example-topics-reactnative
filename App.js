@@ -29,7 +29,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import ZegoExpressEngine, {ZegoScenario, ZegoEventListener, ZegoSurfaceView, ZegoTextureView} from 'zego-express-engine-reactnative';
+import ZegoExpressEngine, {ZegoSurfaceView, ZegoTextureView} from 'zego-express-engine-reactnative';
 import { ZegoUser, ZegoView, ZegoVideoConfig, ZegoMediaPlayer } from 'zego-express-engine-reactnative/src/ZegoExpressDefines';
 
 
@@ -46,60 +46,6 @@ export default class App extends Component<{}> {
     this.version = ""
   }
 
-  _test_onLoginRoom(roomID, state, errorCode, extendedData) {
-    console.log("JS2 room StateUpdate");
-  }
-
-  //核实
-  async _checkPermission() {
-    try {
-        //返回Promise类型
-        const granted = PermissionsAndroid.check(
-            PermissionsAndroid.PERMISSIONS.CAMERA
-        )
-        granted.then((data)=>{
-            this.show("是否获取读写权限"+data)
-        }).catch((err)=>{
-            this.show(err.toString())
-        })
-    } catch (err) {
-        this.show(err.toString())
-    }
-  }
-
-//请求多个
-async requestMultiplePermission() {
-  try {
-      const permissions = [
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          PermissionsAndroid.PERMISSIONS.CAMERA
-      ]
-      //返回得是对象类型
-      const granteds = await PermissionsAndroid.requestMultiple(permissions)
-      var data = "是否同意地址权限: "
-      if (granteds["android.permission.ACCESS_FINE_LOCATION"] === "granted") {
-          data = data + "是\n"
-      } else {
-          data = data + "否\n"
-      }
-      data = data+"是否同意相机权限: "
-      if (granteds["android.permission.CAMERA"] === "granted") {
-          data = data + "是\n"
-      } else {
-          data = data + "否\n"
-      }
-      data = data+"是否同意存储权限: "
-      if (granteds["android.permission.WRITE_EXTERNAL_STORAGE"] === "granted") {
-          data = data + "是\n"
-      } else {
-          data = data + "否\n"
-      }
-      this.show(data)
-  } catch (err) {
-      this.show("check permission error: " + err.toString())
-  }
-}
-
   onClickA() {
     ZegoExpressEngine.instance().on('RoomStateUpdate', (roomID, state, errorCode, extendedData) => {
       console.log("JS onRoomStateUpdate: " + state + " roomID: " + roomID + " err: " + errorCode + " extendData: " + extendedData);
@@ -115,17 +61,14 @@ async requestMultiplePermission() {
 
     ZegoExpressEngine.instance().loginRoom("9999", new ZegoUser("lzp", "lzpppp"));
     ZegoExpressEngine.instance().startPreview(new ZegoView(findNodeHandle(this.refs.zego_preview_view), 0, 0));
-    //ZegoExpressEngine.instance().startPublishingStream("333");
+    ZegoExpressEngine.instance().startPublishingStream("333");
+    ZegoExpressEngine.instance().startPlayingStream("333", new ZegoView(findNodeHandle(this.refs.zego_play_view), 0, 0));
+  }
 
-    //ZegoExpressEngine.instance().startPlayingStream("333", new ZegoView(findNodeHandle(this.refs.zego_play_view), 0, 0));
-    /*ZegoExpressEngine.instance().setVideoConfig(new ZegoVideoConfig(5));
-    ZegoExpressEngine.instance().getVideoConfig().then((config) => {
-      console.log("cw: " + config.captureWidth + " ch: " + config.captureHeight + " ew: " + config.encodeWidth + " eh: " + config.encodeHeight + " br: " + config.bitrate + " fps: " + config.fps + " cid: " + config.codecID);
-    });
-
+  onClickB() {
     ZegoExpressEngine.instance().createMediaPlayer().then((player) => {
       this.mediaPlayer = player;
-      this.mediaPlayer.setPlayerView(new ZegoView(findNodeHandle(this.refs.zego_preview_view), 0, 0));
+      this.mediaPlayer.setPlayerView(new ZegoView(findNodeHandle(this.refs.zego_media_view), 0, 0));
       this.mediaPlayer.on("MediaPlayerStateUpdate", (player, state, errorCode) => {
         console.log("media player state: " + state + " err: " + errorCode);
       });
@@ -137,24 +80,7 @@ async requestMultiplePermission() {
         this.mediaPlayer.start();
       });
 
-    });*/
-  }
-
-  onClickLogin() {
-    ZegoExpressEngine.instance().loginRoom("9999", new ZegoUser("lzp", "lzpppp"));
-  }
-
-  onClickLogout() {
-    ZegoExpressEngine.instance().logoutRoom("9999");
-  }
-
-  onClickAddListener() {
-    ZegoExpressEngine.instance().on('RoomStateUpdate', this._test_onLoginRoom);
-  }
-
-  onClickRemoveListener() {
-    ZegoExpressEngine.instance().off('RoomStateUpdate', this._test_onLoginRoom);
-    ZegoExpressEngine.instance().destroyMediaPlayer(this.mediaPlayer);
+    });
   }
 
   componentDidMount() {
@@ -205,43 +131,23 @@ async requestMultiplePermission() {
             <View style={styles.body}>
               <View style={styles.sectionContainer}>
               <Button onPress={this.onClickA.bind(this)}
-                      title="点我！"/>
-                <Text style={styles.sectionDescription}>
-                  Edit <Text style={styles.highlight}>App.js</Text> to change this
-                  screen and then come back to see your edits.
-                </Text>
+                      title="点我进行推拉流"/>
               </View>
-              <Button onPress={this.onClickLogin.bind(this)}
-                      title="loginRoom" />
-              <Button onPress={this.onClickLogout.bind(this)}
-                      title="logoutRoom" />
-              <Button onPress={this.onClickAddListener.bind(this)}
-                      title="addEventListener" />
-              <Button onPress={this.onClickRemoveListener.bind(this)}
-                      title="removeEventListener" />
+              <Text style={styles.sectionTitle}>本地预览</Text>
               <View style={{height: 200}}>
                   <ZegoTextureView ref='zego_preview_view' style={{height: 200}}/>
               </View>
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>See Your Changes</Text>
-                <Text style={styles.sectionDescription}>
-                  <ReloadInstructions />
-                </Text>
-              </View>
-              
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Debug</Text>
-                <Text style={styles.sectionDescription}>
-                  <DebugInstructions />
-                </Text>
+              <Text style={styles.sectionTitle}>远端拉流</Text>
+              <View style={{height: 200}}>
+                  <ZegoTextureView ref='zego_play_view' style={{height: 200}}/>
               </View>
               <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Learn More</Text>
-                <Text style={styles.sectionDescription}>
-                  Read the docs to discover what to do next:
-                </Text>
+              <Button onPress={this.onClickB.bind(this)}
+                      title="点我进行网络媒体播放"/>
               </View>
-              <LearnMoreLinks />
+              <View style={{height: 200}}>
+                  <ZegoTextureView ref='zego_media_view' style={{height: 200}}/>
+              </View>
             </View>
           </ScrollView>
         </SafeAreaView>
