@@ -13,7 +13,7 @@
     "i": "^0.3.6",
     "react": "16.13.1",
     "react-native": "0.63.2",
-    "zego-express-engine-reactnative": "../zego-express-reactnative-sdk"
+    "zego-express-engine-reactnative": "^0.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",

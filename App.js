@@ -33,10 +33,10 @@ import ZegoExpressEngine, {ZegoSurfaceView, ZegoTextureView} from 'zego-express-
 import { ZegoUser, ZegoView, ZegoVideoConfig, ZegoMediaPlayer } from 'zego-express-engine-reactnative/src/ZegoExpressDefines';
 
 
-const granted = PermissionsAndroid.check(
-  PermissionsAndroid.PERMISSIONS.CAMERA,
-  PermissionsAndroid.RECORD_AUDIO
-)
+const granted = (Platform.OS == 'android' ? PermissionsAndroid.check(
+                                              PermissionsAndroid.PERMISSIONS.CAMERA,
+                                              PermissionsAndroid.RECORD_AUDIO) : undefined);
+
 
 export default class App extends Component<{}> {
 
@@ -75,8 +75,8 @@ export default class App extends Component<{}> {
       this.mediaPlayer.on("MediaPlayerPlayingProgress", (player, millsecond) => {
         console.log("progress: " + millsecond);
       });
-      this.mediaPlayer.loadResource("https://storage.zego.im/demo/201808270915.mp4").then((err) => {
-        console.log("load resource err: " + err);
+      this.mediaPlayer.loadResource("https://storage.zego.im/demo/201808270915.mp4").then((ret) => {
+        console.log("load resource err: " + ret.errorCode);
         this.mediaPlayer.start();
       });
 
