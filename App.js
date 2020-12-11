@@ -29,9 +29,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import ZegoExpressEngine, {ZegoSurfaceView, ZegoTextureView} from 'zego-express-engine-reactnative';
-import { ZegoUser, ZegoView, ZegoVideoConfig, ZegoMediaPlayer } from 'zego-express-engine-reactnative/src/ZegoExpressDefines';
-
+import ZegoExpressEngine, {ZegoTextureView} from 'zego-express-engine-reactnative';
 
 const granted = (Platform.OS == 'android' ? PermissionsAndroid.check(
                                               PermissionsAndroid.PERMISSIONS.CAMERA,
@@ -47,32 +45,32 @@ export default class App extends Component<{}> {
   }
 
   onClickA() {
-    ZegoExpressEngine.instance().on('RoomStateUpdate', (roomID, state, errorCode, extendedData) => {
+    ZegoExpressEngine.instance().on('roomStateUpdate', (roomID, state, errorCode, extendedData) => {
       console.log("JS onRoomStateUpdate: " + state + " roomID: " + roomID + " err: " + errorCode + " extendData: " + extendedData);
     });
 
-    ZegoExpressEngine.instance().on('PublisherStateUpdate', (streamID, state, errorCode, extendedData) => {
+    ZegoExpressEngine.instance().on('publisherStateUpdate', (streamID, state, errorCode, extendedData) => {
       console.log("JS onPublisherStateUpdate: " + state + " streamID: " + streamID + " err: " + errorCode + " extendData: " + extendedData);
     });
 
-    ZegoExpressEngine.instance().on('PlayerStateUpdate', (streamID, state, errorCode, extendedData) => {
+    ZegoExpressEngine.instance().on('playerStateUpdate', (streamID, state, errorCode, extendedData) => {
       console.log("JS onPlayerStateUpdate: " + state + " streamID: " + streamID + " err: " + errorCode + " extendData: " + extendedData);
     });
 
-    ZegoExpressEngine.instance().loginRoom("9999", new ZegoUser("lzp", "lzpppp"));
-    ZegoExpressEngine.instance().startPreview(new ZegoView(findNodeHandle(this.refs.zego_preview_view), 0, 0));
+    ZegoExpressEngine.instance().loginRoom("9999", {"userID": "lzp", "userName": "lzpppppppp"});
+    ZegoExpressEngine.instance().startPreview({"reactTag": findNodeHandle(this.refs.zego_preview_view), "viewMode": 0, "backgroundColor": 0});
     ZegoExpressEngine.instance().startPublishingStream("333");
-    ZegoExpressEngine.instance().startPlayingStream("333", new ZegoView(findNodeHandle(this.refs.zego_play_view), 0, 0));
+    ZegoExpressEngine.instance().startPlayingStream("333", {"reactTag": findNodeHandle(this.refs.zego_play_view), "viewMode": 0, "backgroundColor": 0});
   }
 
   onClickB() {
     ZegoExpressEngine.instance().createMediaPlayer().then((player) => {
       this.mediaPlayer = player;
-      this.mediaPlayer.setPlayerView(new ZegoView(findNodeHandle(this.refs.zego_media_view), 0, 0));
-      this.mediaPlayer.on("MediaPlayerStateUpdate", (player, state, errorCode) => {
+      this.mediaPlayer.setPlayerView({"reactTag": findNodeHandle(this.refs.zego_media_view), "viewMode": 0, "backgroundColor": 0});
+      this.mediaPlayer.on("mediaPlayerStateUpdate", (player, state, errorCode) => {
         console.log("media player state: " + state + " err: " + errorCode);
       });
-      this.mediaPlayer.on("MediaPlayerPlayingProgress", (player, millsecond) => {
+      this.mediaPlayer.on("mediaPlayerPlayingProgress", (player, millsecond) => {
         console.log("progress: " + millsecond);
       });
       this.mediaPlayer.loadResource("https://storage.zego.im/demo/201808270915.mp4").then((ret) => {
@@ -85,8 +83,10 @@ export default class App extends Component<{}> {
 
   componentDidMount() {
     console.log("componentDidMount")
-
-    ZegoExpressEngine.createEngine(1739272706, "1ec3f85cb2f21370264eb371c8c65ca37fa33b9defef2a85e0c899ae82c0f6f8", true, 0).then((engine) => {
+    // 请填入在 Zego 官网控制台申请好的 AppID 与 AppSign
+    var appID = 
+    var appSign = 
+    ZegoExpressEngine.createEngine(appID, appSign, true, 0).then((engine) => {
         // 动态获取设备权限（android）
         if(Platform.OS == 'android') {
           granted.then((data)=>{
@@ -103,6 +103,10 @@ export default class App extends Component<{}> {
             console.log("check err: " + err.toString())
           })
         }
+
+        engine.getVersion().then((ver) => {
+          console.log("Express SDK Version: " + ver)
+        });
     });
     
   }
