@@ -49,6 +49,24 @@ export default class App extends Component<{}> {
       console.log("JS onRoomStateUpdate: " + state + " roomID: " + roomID + " err: " + errorCode + " extendData: " + extendedData);
     });
 
+    ZegoExpressEngine.instance().on('IMRecvBroadcastMessage', (roomID, messageList) => {
+      console.log("JS onIMRecvBroadcastMessage: " + " roomID: " + roomID + " messageList: " + messageList);
+      for (let msg of messageList) {
+        console.log("current broadcast msg: message: " + msg.message + " messageID" + msg.messageID + " sendTime: " + msg.sendTime + " from user :" + msg.fromUser.userID + " x " + msg.fromUser.userName); // "0", "1", "2",
+      }
+    });
+
+    ZegoExpressEngine.instance().on('IMRecvBarrageMessage', (roomID, messageList) => {
+      console.log("JS onIMRecvBarrageMessage: " + " roomID: " + roomID);
+      for (let msg of messageList) {
+        console.log("current barrage msg: message: " + msg.message + " messageID" + msg.messageID + " sendTime: " + msg.sendTime + " from user :" + msg.fromUser.userID + " x " + msg.fromUser.userName); // "0", "1", "2",
+     }
+    });
+
+    ZegoExpressEngine.instance().on('IMRecvCustomCommand', (roomID, fromUser, command) => {
+      console.log("JS onIMRecvCustomCommand: " + " roomID: " + roomID + " from user: " + fromUser.userID + " x " + fromUser.userName + " command: " + command);
+    });
+
     ZegoExpressEngine.instance().on('publisherStateUpdate', (streamID, state, errorCode, extendedData) => {
       console.log("JS onPublisherStateUpdate: " + state + " streamID: " + streamID + " err: " + errorCode + " extendData: " + extendedData);
     });
@@ -78,6 +96,16 @@ export default class App extends Component<{}> {
         this.mediaPlayer.start();
       });
 
+    });
+  }
+
+  onClickC() {
+    ZegoExpressEngine.instance().sendBroadcastMessage("9999", "test-boardcast-msg!!!!!!");
+    ZegoExpressEngine.instance().sendBarrageMessage("9999", "test-danmaku-msg!!!!!!").then((ret) => {
+      console.log("sendBarrageMessage: error: " + ret.errorCode + " message str: " + ret.messageID)
+    });
+    ZegoExpressEngine.instance().sendCustomCommand("9999", "testcommand?").then((ret) => {
+      console.log("sendCustomCommand: error: " + ret.errorCode)
     });
   }
 
@@ -152,6 +180,8 @@ export default class App extends Component<{}> {
               <View style={{height: 200}}>
                   <ZegoTextureView ref='zego_media_view' style={{height: 200}}/>
               </View>
+              <Button onPress={this.onClickC.bind(this)}
+                      title="点我发送 IM"/>
             </View>
           </ScrollView>
         </SafeAreaView>
