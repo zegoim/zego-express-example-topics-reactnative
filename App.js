@@ -29,7 +29,7 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import ZegoExpressEngine, {ZegoTextureView} from 'zego-express-engine-reactnative';
+import ZegoExpressEngine, {ZegoTextureView, ZegoMixerTask, ZegoAudioConfig, ZegoAudioConfigPreset, ZegoMixerInputContentType} from 'zego-express-engine-reactnative';
 
 const granted = (Platform.OS == 'android' ? PermissionsAndroid.check(
                                               PermissionsAndroid.PERMISSIONS.CAMERA,
@@ -75,6 +75,23 @@ export default class App extends Component<{}> {
       console.log("JS onPlayerStateUpdate: " + state + " streamID: " + streamID + " err: " + errorCode + " extendData: " + extendedData);
     });
 
+    ZegoExpressEngine.instance().on('mixerSoundLevelUpdate', (soundLevels) => {
+      /*soundLevels.array.forEach(element => {
+        console.log("JS onMixerSoundLevelUpdate: " + element)
+      });*/
+      var level = soundLevels[0]
+
+      console.log("JS onMixerSoundLevelUpdate: " + soundLevels[0] + " type of: " + typeof level)
+      
+    });
+
+    ZegoExpressEngine.instance().on('mixerRelayCDNStateUpdate', (taskID, infoList) => {
+      console.log("JS onMixerRelayCDNStateUpdate: " + taskID)
+      infoList.forEach((item) => {
+        console.log("item: " + item.url + " ,state: " + item.state + " ,reason: " + item.updateReason, " ,time: " + item.stateTime)
+      })
+    });
+
     ZegoExpressEngine.instance().loginRoom("9999", {"userID": "lzp", "userName": "lzpppppppp"});
     ZegoExpressEngine.instance().startPreview({"reactTag": findNodeHandle(this.refs.zego_preview_view), "viewMode": 0, "backgroundColor": 0});
     ZegoExpressEngine.instance().startPublishingStream("333");
@@ -89,11 +106,16 @@ export default class App extends Component<{}> {
         console.log("media player state: " + state + " err: " + errorCode);
       });
       this.mediaPlayer.on("mediaPlayerPlayingProgress", (player, millsecond) => {
-        console.log("progress: " + millsecond);
+        //console.log("progress: " + millsecond);
       });
       this.mediaPlayer.loadResource("https://storage.zego.im/demo/201808270915.mp4").then((ret) => {
         console.log("load resource err: " + ret.errorCode);
         this.mediaPlayer.start();
+
+        this.mediaPlayer.getAudioTrackCount().then((count) => {
+          console.log(" get audio track count: " + count);
+          this.mediaPlayer.setAudioTrackIndex(1);
+        });
       });
 
     });
@@ -107,6 +129,26 @@ export default class App extends Component<{}> {
     ZegoExpressEngine.instance().sendCustomCommand("9999", "testcommand?").then((ret) => {
       console.log("sendCustomCommand: error: " + ret.errorCode)
     });
+  }
+
+  onClickD() {
+    const task = new ZegoMixerTask('mix-stream-rn')
+    task.inputList = [{"streamID": "333", "contentType": ZegoMixerInputContentType.Video, "layout": {"x": 0, "y": 0, "width": 100, "height": 100}}]
+    task.outputList = [{"target": "zzzz"}]
+    //var task = {"taskID": "mix-stream-rn"}
+    console.log("task soundlevel: " + task.enableSoundLevel)
+    ZegoExpressEngine.instance().startMixerTask(task).then((result) => {
+      console.log("start mixer task, error: " + result.errorCode + " extended data: " + result.extendedData)
+    })
+  }
+
+  onClickE() {
+    const task = new ZegoMixerTask('mix-stream-rn')
+    task.inputList = [{"streamID": "333", "contentType": ZegoMixerInputContentType.Audio}]
+    task.outputList = [{"target": "zzzz"}]
+    ZegoExpressEngine.instance().stopMixerTask(task).then((result) => {
+      console.log("stop mixer task, error: " + result.errorCode)
+    })
   }
 
   componentDidMount() {
@@ -182,6 +224,10 @@ export default class App extends Component<{}> {
               </View>
               <Button onPress={this.onClickC.bind(this)}
                       title="点我发送 IM"/>
+              <Button onPress={this.onClickD.bind(this)}
+                      title="点我发起混流"/>
+              <Button onPress={this.onClickE.bind(this)}
+                      title="点我停止混流"/>
             </View>
           </ScrollView>
         </SafeAreaView>
