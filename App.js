@@ -29,12 +29,31 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-import ZegoExpressEngine, {ZegoTextureView, ZegoMixerTask, ZegoAudioConfig, ZegoAudioConfigPreset, ZegoMixerInputContentType} from 'zego-express-engine-reactnative';
+import ZegoExpressEngine, {ZegoTextureView, ZegoMixerTask, ZegoAudioConfig, ZegoAudioConfigPreset, ZegoMixerInputContentType, ZegoScenario} from 'zego-express-engine-reactnative';
 
 const granted = (Platform.OS == 'android' ? PermissionsAndroid.check(
                                               PermissionsAndroid.PERMISSIONS.CAMERA,
                                               PermissionsAndroid.RECORD_AUDIO) : undefined);
 
+
+
+// Developers can get appID from admin console.
+// https://console.zego.im/dashboard
+// for example:
+//     const appID = 123456789;
+const appID = 
+
+// Developers should customize a user ID.
+// for example:
+//     const userID = "zego_benjamin";
+const userID = ''
+
+// Developers can get token from admin console.
+// https://console.zego.im/dashboard
+// Note: The user ID used to generate the token needs to be the same as the userID filled in above!
+// for example:
+//     const token = "04AAAAAxxxxxxxxxxxxxx";
+const token = ''
 
 export default class App extends Component<{}> {
 
@@ -92,7 +111,7 @@ export default class App extends Component<{}> {
       })
     });
 
-    ZegoExpressEngine.instance().loginRoom("9999", {"userID": "lzp", "userName": "lzpppppppp"});
+    ZegoExpressEngine.instance().loginRoom("9999", {"userID": userID, "userName": "zego"}, {token: token});
     ZegoExpressEngine.instance().startPreview({"reactTag": findNodeHandle(this.refs.zego_preview_view), "viewMode": 0, "backgroundColor": 0});
     ZegoExpressEngine.instance().startPublishingStream("333");
     ZegoExpressEngine.instance().startPlayingStream("333", {"reactTag": findNodeHandle(this.refs.zego_play_view), "viewMode": 0, "backgroundColor": 0});
@@ -153,10 +172,9 @@ export default class App extends Component<{}> {
 
   componentDidMount() {
     console.log("componentDidMount")
-    // 请填入在 Zego 官网控制台申请好的 AppID 与 AppSign
-    var appID = 
-    var appSign = 
-    ZegoExpressEngine.createEngine(appID, appSign, true, 0).then((engine) => {
+    let profile = {appID: appID, scenario: ZegoScenario.General}
+    
+    ZegoExpressEngine.createEngineWithProfile(profile).then((engine) => {
         // 动态获取设备权限（android）
         if(Platform.OS == 'android') {
           granted.then((data)=>{
