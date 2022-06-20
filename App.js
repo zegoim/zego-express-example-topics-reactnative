@@ -48,12 +48,9 @@ const appID =
 //     const userID = "zego_benjamin";
 const userID = ''
 
-// Developers can get token from admin console.
-// https://console.zego.im/dashboard
-// Note: The user ID used to generate the token needs to be the same as the userID filled in above!
-// for example:
-//     const token = "04AAAAAxxxxxxxxxxxxxx";
-const token = ''
+// AppSign only meets simple authentication requirements. If you need to upgrade to a more secure authentication method, please refer to [How to upgrade from AppSign authentication to Token authentication](https://doc-zh.zego.im/faq/token_upgrade?product=ExpressVideo&platform=all)
+// AppSign is available through the [console](https://console.zego.im/dashboard) in the format "39011cbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+const appSign = ''
 
 export default class App extends Component<{}> {
 
@@ -111,7 +108,7 @@ export default class App extends Component<{}> {
       })
     });
 
-    ZegoExpressEngine.instance().loginRoom("9999", {"userID": userID, "userName": "zego"}, {token: token});
+    ZegoExpressEngine.instance().loginRoom("9999", {"userID": userID, "userName": "zego"});
     ZegoExpressEngine.instance().startPreview({"reactTag": findNodeHandle(this.refs.zego_preview_view), "viewMode": 0, "backgroundColor": 0});
     ZegoExpressEngine.instance().startPublishingStream("333");
     ZegoExpressEngine.instance().startPlayingStream("333", {"reactTag": findNodeHandle(this.refs.zego_play_view), "viewMode": 0, "backgroundColor": 0});
@@ -172,7 +169,7 @@ export default class App extends Component<{}> {
 
   componentDidMount() {
     console.log("componentDidMount")
-    let profile = {appID: appID, scenario: ZegoScenario.General}
+    let profile = {appID: appID, appSign: appSign, scenario: ZegoScenario.General}
     
     ZegoExpressEngine.createEngineWithProfile(profile).then((engine) => {
         // 动态获取设备权限（android）
